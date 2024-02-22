@@ -3,7 +3,7 @@ function y = retardo(x, m)
     % x, señal a retardar,
     % m, retardo
     %
-    % Salidas
+    % Salidas:
     % y, señal retardada
 
     N = length(x);    
