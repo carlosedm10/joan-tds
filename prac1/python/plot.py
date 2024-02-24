@@ -1,13 +1,17 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-def plot_continuous(signal, fs, title=None):
+def plot_continuous(signal, fs, title=None, ylabel=None):
     t = np.arange(len(signal)) / fs
 
     plt.plot(t, signal)
     plt.xlabel('Time (s)')
+
     if title:
         plt.title(title)
+
+    if ylabel:
+        plt.ylabel(ylabel)
 
     plt.show()
 
