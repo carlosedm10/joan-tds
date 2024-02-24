@@ -2,33 +2,43 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import scipy.io.wavfile as wav
+import sys
+# import simpleaudio as sa
 
 from plot import plot_continuous, plot_continuous_discrete
 from frames import non_overlapping_frames, overlapping_frames
 from fundamental_frecuency import calculate_fundamental_frequency
+
 
 AUDIO_DIR = '../audio'
 
 # Plot all the .wav files in the audio directory
 for file in os.listdir(AUDIO_DIR):
     if file.endswith('.wav'):
-        fs, y = wav.read(os.path.join(AUDIO_DIR, file))
+        file_path = os.path.join(AUDIO_DIR, file)
+        fs, y = wav.read(file_path)
+        y = y / 2**15 # normalize the signal
         plot_continuous_discrete(y, fs, file)
 
+        # play the sound
+        # wave_obj = sa.WaveObject.from_wave_file(file_path)
+        # play_obj = wave_obj.play()
+        # play_obj.wait_done()
+
 # get the signal and the sampling frequency of the first 3 .wav files
-fs1, y1 = wav.read('../audio/sound1.wav')
-fs2, y2 = wav.read('../audio/sound2.wav')
-fs3, y3 = wav.read('../audio/sound3.wav')
-fs4, y4 = wav.read('../audio/sound4.wav')
-fs5, y5 = wav.read('../audio/sound5.wav')
+fs1, y1 = wav.read(os.path.join(AUDIO_DIR, 'sound1.wav'))
+fs2, y2 = wav.read(os.path.join(AUDIO_DIR, 'sound2.wav'))
+fs3, y3 = wav.read(os.path.join(AUDIO_DIR, 'sound3.wav'))
+fs4, y4 = wav.read(os.path.join(AUDIO_DIR, 'sound4.wav'))
+fs5, y5 = wav.read(os.path.join(AUDIO_DIR, 'sound5.wav')) 
 
 # normalize the signals to match with matlab behavior
 # samples are 16-bit signed integers in the range -32768 to 32767
-y1 = y1 / 32768
-y2 = y2 / 32768
-y3 = y3 / 32768
-y4 = y4 / 32768
-y5 = y5 / 32768
+y1 = y1 / 2 ** 15
+y2 = y2 / 2 ** 15
+y3 = y3 / 2 ** 15
+y4 = y4 / 2 ** 15
+y5 = y5 / 2 ** 15
 
 # extract and visualize a 100ms frame from each signal
 yframe1_len = round(0.1 * fs1)
