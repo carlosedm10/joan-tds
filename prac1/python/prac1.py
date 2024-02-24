@@ -85,11 +85,11 @@ E3_frames = (non_overlapping_frames(y3, fs3, 0.1) ** 2).sum(axis=0)
 E4_frames = (non_overlapping_frames(y4, fs4, 0.1) ** 2).sum(axis=0)
 E5_frames = (non_overlapping_frames(y5, fs5, 0.1) ** 2).sum(axis=0)
 
-print('Energy of sound1.wav (non overlapping frames):', E1_frames)
-print('Energy of sound2.wav (non overlapping frames):', E2_frames)
-print('Energy of sound3.wav (non overlapping frames):', E3_frames)
-print('Energy of sound4.wav (non overlapping frames):', E4_frames)
-print('Energy of sound5.wav (non overlapping frames):', E5_frames)
+print(f'Energy of sound1.wav (non overlapping frames): {E1_frames} J')
+print(f'Energy of sound2.wav (non overlapping frames): {E2_frames} J')
+print(f'Energy of sound3.wav (non overlapping frames): {E3_frames} J')
+print(f'Energy of sound4.wav (non overlapping frames): {E4_frames} J')
+print(f'Energy of sound5.wav (non overlapping frames): {E5_frames} J')
 
 # plot the energy of the signals in discrete time
 t1 = np.arange(len(E1_frames)) * fs1
@@ -124,11 +124,11 @@ E3_frames = (overlapping_frames(y3, fs3, 0.1, 0.5) ** 2).sum(axis=0)
 E4_frames = (overlapping_frames(y4, fs4, 0.1, 0.5) ** 2).sum(axis=0)
 E5_frames = (overlapping_frames(y5, fs5, 0.1, 0.5) ** 2).sum(axis=0)
 
-print('Energy of sound1.wav (overlapping frames 50%):', E1_frames)
-print('Energy of sound2.wav (overlapping frames 50%):', E2_frames)
-print('Energy of sound3.wav (overlapping frames 50%):', E3_frames)
-print('Energy of sound4.wav (overlapping frames 50%):', E4_frames)
-print('Energy of sound5.wav (overlapping frames 50%):', E5_frames)
+print(f'Energy of sound1.wav (overlapping frames 50%): {E1_frames} J')
+print(f'Energy of sound2.wav (overlapping frames 50%): {E2_frames} J')
+print(f'Energy of sound3.wav (overlapping frames 50%): {E3_frames} J')
+print(f'Energy of sound4.wav (overlapping frames 50%): {E4_frames} J')
+print(f'Energy of sound5.wav (overlapping frames 50%): {E5_frames} J')
 
 # plot the energy of the signals in discrete time
 t1 = np.arange(len(E1_frames)) * fs1
