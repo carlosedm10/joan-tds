@@ -2,155 +2,123 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import scipy.io.wavfile as wav
-# import simpleaudio as sa
+import sys
+import sounddevice as sd
 
 from plot import plot_continuous, plot_continuous_discrete
 from frames import non_overlapping_frames, overlapping_frames
 from fundamental_frecuency import calculate_fundamental_frequency
+from collections import namedtuple
 
+AUDIO_DIR = "../audio"
 
-AUDIO_DIR = '../audio'
+# set numpy print options to print only 10 elements of an array
+np.set_printoptions(threshold=10)
 
-# Plot all the .wav files in the audio directory
-for file in os.listdir(AUDIO_DIR):
-    if file.endswith('.wav'):
-        file_path = os.path.join(AUDIO_DIR, file)
-        fs, y = wav.read(file_path)
-        y = y / 2 ** 15 # normalize the signal
-        plot_continuous_discrete(y, fs, file)
+# get the signal and the sampling frequency of .wav files
+fs1, y1 = wav.read(os.path.join(AUDIO_DIR, "sound1.wav"))
+fs2, y2 = wav.read(os.path.join(AUDIO_DIR, "sound2.wav"))
+fs3, y3 = wav.read(os.path.join(AUDIO_DIR, "sound3.wav"))
+fs4, y4 = wav.read(os.path.join(AUDIO_DIR, "sound4.wav"))
+fs5, y5 = wav.read(os.path.join(AUDIO_DIR, "sound5.wav"))
 
-        # play the sound
-        # wave_obj = sa.WaveObject.from_wave_file(file_path)
-        # play_obj = wave_obj.play()
-        # play_obj.wait_done()
+# normalize the signals to match matlab behavior
+# samples are 16-bit signed integers
+y1 = y1 / 2**15
+y2 = y2 / 2**15
+y3 = y3 / 2**15
+y4 = y4 / 2**15
+y5 = y5 / 2**15
 
-# get the signal and the sampling frequency of the first 3 .wav files
-fs1, y1 = wav.read(os.path.join(AUDIO_DIR, 'sound1.wav'))
-fs2, y2 = wav.read(os.path.join(AUDIO_DIR, 'sound2.wav'))
-fs3, y3 = wav.read(os.path.join(AUDIO_DIR, 'sound3.wav'))
-fs4, y4 = wav.read(os.path.join(AUDIO_DIR, 'sound4.wav'))
-fs5, y5 = wav.read(os.path.join(AUDIO_DIR, 'sound5.wav')) 
+# Create a named tuple to store the signals
+Signal = namedtuple("Signal", ["y", "fs", "file"])
+signals = [
+    Signal(y1, fs1, "sound1.wav"),
+    Signal(y2, fs2, "sound2.wav"),
+    Signal(y3, fs3, "sound3.wav"),
+    Signal(y4, fs4, "sound4.wav"),
+    Signal(y5, fs5, "sound5.wav"),
+]
 
-# normalize the signals to match with matlab behavior
-# samples are 16-bit signed integers in the range -32768 to 32767
-y1 = y1 / 2 ** 15
-y2 = y2 / 2 ** 15
-y3 = y3 / 2 ** 15
-y4 = y4 / 2 ** 15
-y5 = y5 / 2 ** 15
+# Plot and play the signals
+for signal in signals:
+    plot_continuous_discrete(signal.y, signal.fs, title=signal.file)
 
-# extract and visualize a 100ms frame from each signal
-yframe1_len = round(0.1 * fs1)
-yframe2_len = round(0.1 * fs2)
-yframe3_len = round(0.1 * fs3)
-yframe4_len = round(0.1 * fs4)
-yframe5_len = round(0.1 * fs5)
+    # Play the audio
+    # sd.play(y, fs)
+    # sd.wait()
 
-yframe1 = y1[15000:15000 + yframe1_len]
-yframe2 = y2[14000:14000 + yframe2_len]
-yframe3 = y3[1000:1000 + yframe3_len]
-yframe4 = y4[18000:18000 + yframe4_len]
-yframe5 = y5[12300:12300 + yframe5_len]
+# values chosen by hand to get the relevant part of the signals
+frames_start = [15000, 14000, 1000, 18000, 12300]
 
-plot_continuous(yframe1, fs1, 'sound1.wav frame')
-plot_continuous(yframe2, fs2, 'sound2.wav frame')
-plot_continuous(yframe3, fs3, 'sound3.wav frame')
-plot_continuous(yframe4, fs4, 'sound4.wav frame')
-plot_continuous(yframe5, fs5, 'sound5.wav frame')
+for signal, frame_start in zip(signals, frames_start):
+    # calculate the length of the frames
+    frame_duration = 0.1
+    yframe_len = round(frame_duration * signal.fs)
 
-# only the first and the third signals are periodic
-print(f'Fundamental frecuecny of signal sound1.waw: {calculate_fundamental_frequency(yframe1, fs1)} hz')
-print(f'Fundamental frecuecny of signal sound3.waw: {calculate_fundamental_frequency(yframe3, fs3)} hz')
-print(f'Fundamental frecuecny of signal sound4.waw: {calculate_fundamental_frequency(yframe4, fs4)} hz')
+    # extract the frames from the original signals.
+    yframe = signal.y[frame_start : frame_start + yframe_len]
 
-# power of the signals
-print(f'Power of sound1.wav: {(y1 ** 2).mean()} W')
-print(f'Power of sound2.wav: {(y2 ** 2).mean()} W')
-print(f'Power of sound3.wav: {(y3 ** 2).mean()} W')
-print(f'Power of sound4.wav: {(y4 ** 2).mean()} W')
-print(f'Power of sound5.wav: {(y5 ** 2).mean()} W')
+    # plot the frames
+    plot_continuous(yframe, signal.fs, title=f"{signal.file} frame")
 
-# energy of the signals
-print(f'Energy of sound1.wav: {(y1 ** 2).sum()} J')
-print(f'Energy of sound2.wav: {(y2 ** 2).sum()} J')
-print(f'Energy of sound3.wav: {(y3 ** 2).sum()} J')
-print(f'Energy of sound4.wav: {(y4 ** 2).sum()} J')
-print(f'Energy of sound5.wav: {(y5 ** 2).sum()} J')
+    # calculate the fundamental frequency of the signals
+    fundamental_frequency = calculate_fundamental_frequency(yframe, signal.fs)
+    print(f"Fundamental frecuecny of signal {signal.file}: {fundamental_frequency} hz")
 
-# get the energy of the signals in non overlapping frames of 100ms
-E1_frames = (non_overlapping_frames(y1, fs1, 0.1) ** 2).sum(axis=0)
-E2_frames = (non_overlapping_frames(y2, fs2, 0.1) ** 2).sum(axis=0)
-E3_frames = (non_overlapping_frames(y3, fs3, 0.1) ** 2).sum(axis=0)
-E4_frames = (non_overlapping_frames(y4, fs4, 0.1) ** 2).sum(axis=0)
-E5_frames = (non_overlapping_frames(y5, fs5, 0.1) ** 2).sum(axis=0)
+    # calculate the power and energy of the signals
+    print(f"Power of signal {signal.file}: {(signal.y ** 2).mean()} W")
+    print(f"Energy of signal {signal.file}: {(signal.y ** 2).sum()} J")
 
-print(f'Energy of sound1.wav (non overlapping frames): {E1_frames} J')
-print(f'Energy of sound2.wav (non overlapping frames): {E2_frames} J')
-print(f'Energy of sound3.wav (non overlapping frames): {E3_frames} J')
-print(f'Energy of sound4.wav (non overlapping frames): {E4_frames} J')
-print(f'Energy of sound5.wav (non overlapping frames): {E5_frames} J')
+E_frames = []
+for signal in signals:
+    # get the energy of the signals in overlapping frames of 100ms
+    frame_duration = 0.1
+    E_frame = (non_overlapping_frames(signal.y, signal.fs, frame_duration) ** 2).sum(
+        axis=0
+    )
+    E_frames.append(E_frame)
 
-# plot the energy of the signals in discrete time
-t1 = np.arange(len(E1_frames)) * fs1
-t2 = np.arange(len(E2_frames)) * fs2
-t3 = np.arange(len(E3_frames)) * fs3
-t4 = np.arange(len(E4_frames)) * fs4
-t5 = np.arange(len(E5_frames)) * fs5
+    # plot the energy of the signals in continuous time
+    fs = 1 / frame_duration
+    plot_continuous(E_frame, fs, title=f"{signal.file} energy", ylabel="Energy (J)")
+    print(f"Energy of signal {signal.file} (non overlapping frames): {E_frame} J")
 
-plt.plot(t1, E1_frames, label='sound1.wav')
-plt.plot(t2, E2_frames, label='sound2.wav')
-plt.plot(t3, E3_frames, label='sound3.wav')
-plt.plot(t4, E4_frames, label='sound4.wav')
-plt.plot(t5, E5_frames, label='sound5.wav')
-plt.xlabel('n')
-plt.ylabel('Energy (J)')
-plt.title('Energy of the signals (non-overlapping frames)')
-plt.legend()
+for E_frame in E_frames:
+    # add the energy of the signal to the final plot with the energy of all the signals
+    t = np.arange(len(E_frame)) * signal.fs
+    plt.plot(t, E_frame)
+
+# plot the energy of all the signals in discrete time
+plt.xlabel("n")
+plt.ylabel("Energy (J)")
+plt.title("Energy of the signals (non overlapping frames)")
+plt.legend([signal.file for signal in signals])
 plt.show()
 
-# plot the energy of the signals in continuous time
-# the sampling frequency is 10Hz because the frames are 100ms long
-plot_continuous(E3_frames, 10, 'sound1.wav energy', 'Energy (J)')
-plot_continuous(E2_frames, 10, 'sound2.wav energy', ylabel='Energy (J)')
-plot_continuous(E1_frames, 10, 'sound3.wav energy', ylabel='Energy (J)')
-plot_continuous(E4_frames, 10, 'sound4.wav energy', ylabel='Energy (J)')
-plot_continuous(E5_frames, 10, 'sound5.wav energy', ylabel='Energy (J)')
+E_frames = []
+for signal in signals:
+    # get the energy of the signals in overlapping frames of 100ms
+    overlap = 0.5
+    frame_duration = 0.02
+    E_frame = (
+        overlapping_frames(signal.y, signal.fs, frame_duration, overlap) ** 2
+    ).sum(axis=0)
+    E_frames.append(E_frame)
 
-# get the energy of the signals in overlapping frames of 100ms with 50% overlap
-E1_frames = (overlapping_frames(y1, fs1, 0.1, 0.5) ** 2).sum(axis=0)
-E2_frames = (overlapping_frames(y2, fs2, 0.1, 0.5) ** 2).sum(axis=0)
-E3_frames = (overlapping_frames(y3, fs3, 0.1, 0.5) ** 2).sum(axis=0)
-E4_frames = (overlapping_frames(y4, fs4, 0.1, 0.5) ** 2).sum(axis=0)
-E5_frames = (overlapping_frames(y5, fs5, 0.1, 0.5) ** 2).sum(axis=0)
+    # plot the energy of the signals in continuous time
+    fs = 1 / (frame_duration * overlap)
+    plot_continuous(E_frame, fs, title=f"{signal.file} energy", ylabel="Energy (J)")
+    print(f"Energy of signal {signal.file} (non overlapping frames): {E_frame} J")
 
-print(f'Energy of sound1.wav (overlapping frames 50%): {E1_frames} J')
-print(f'Energy of sound2.wav (overlapping frames 50%): {E2_frames} J')
-print(f'Energy of sound3.wav (overlapping frames 50%): {E3_frames} J')
-print(f'Energy of sound4.wav (overlapping frames 50%): {E4_frames} J')
-print(f'Energy of sound5.wav (overlapping frames 50%): {E5_frames} J')
+for E_frame in E_frames:
+    # add the energy of the signal to the final plot with the energy of all the signals
+    t = np.arange(len(E_frame)) * signal.fs
+    plt.plot(t, E_frame)
 
-# plot the energy of the signals in discrete time
-t1 = np.arange(len(E1_frames)) * fs1
-t2 = np.arange(len(E2_frames)) * fs2
-t3 = np.arange(len(E3_frames)) * fs3
-t4 = np.arange(len(E4_frames)) * fs4
-t5 = np.arange(len(E5_frames)) * fs5
-
-plt.plot(t1, E1_frames, label='sound1.wav')
-plt.plot(t2, E2_frames, label='sound2.wav')
-plt.plot(t3, E3_frames, label='sound3.wav')
-plt.plot(t4, E4_frames, label='sound4.wav')
-plt.plot(t5, E5_frames, label='sound5.wav')
-plt.xlabel('n')
-plt.ylabel('Energy (J)')
-plt.title('Energy of the signals (overlapping frames 50%)')
-plt.legend()
+# plot the energy of all the signals in discrete time
+plt.xlabel("n")
+plt.ylabel("Energy (J)")
+plt.title("Energy of the signals (non overlapping frames)")
+plt.legend([signal.file for signal in signals])
 plt.show()
-
-# plot the energy of the signals in continuous time
-# the sampling frequency is 10Hz because the frames are 100ms long
-plot_continuous(E1_frames, 10, 'sound1.wav energy', ylabel='Energy (J)')
-plot_continuous(E2_frames, 10, 'sound2.wav energy', ylabel='Energy (J)')
-plot_continuous(E3_frames, 10, 'sound3.wav energy', ylabel='Energy (J)')
-plot_continuous(E4_frames, 10, 'sound4.wav energy', ylabel='Energy (J)')
-plot_continuous(E5_frames, 10, 'sound5.wav energy', ylabel='Energy (J)')
