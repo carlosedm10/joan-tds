@@ -22,6 +22,3 @@ def overlapping_frames(signal, fs, frame_duration, overlap):
 
     return frames
     
-
-
-

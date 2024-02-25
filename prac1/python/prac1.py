@@ -2,7 +2,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import scipy.io.wavfile as wav
-import sys
 # import simpleaudio as sa
 
 from plot import plot_continuous, plot_continuous_discrete
