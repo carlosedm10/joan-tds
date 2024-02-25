@@ -1,13 +1,15 @@
 import numpy as np
 
+
 def non_overlapping_frames(signal, fs, frame_duration):
     frame_len = round(frame_duration * fs)
     total_frames = len(signal) // frame_len
 
-    frames = signal[:total_frames * frame_len]
-    frames = frames.reshape(frame_len, total_frames, order='F')
+    frames = signal[: total_frames * frame_len]
+    frames = frames.reshape(frame_len, total_frames, order="F")
 
     return frames
+
 
 def overlapping_frames(signal, fs, frame_duration, overlap):
     frame_len = round(frame_duration * fs)
@@ -21,4 +23,3 @@ def overlapping_frames(signal, fs, frame_duration, overlap):
         frames[:, i] = signal[start:end]
 
     return frames
-    
