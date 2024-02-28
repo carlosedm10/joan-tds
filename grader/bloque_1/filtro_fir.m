@@ -14,7 +14,7 @@ B = fir1(N, 2*fc);
 [H,W]= freqz(B,1);
 
 % Convierta W a frecuencia normalizada
-Wn = W/(2*pi);
+f = W/(2*pi);
 
 % Representación en escala lineal
 figure(1)
