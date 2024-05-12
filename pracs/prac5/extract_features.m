@@ -1,49 +1,36 @@
 function extract_features(path)
-    keySet = {'cero', 'uno', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve'};
-    valueSet = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-    mapObj = containers.Map(keySet,valueSet);
-
     if isfolder(path)
         % Get a list of all WAV files in the folder
         files = dir(fullfile(path, '*.wav'));
         
-        descriptors = []; % Initialize an empty array to store descriptors
-        groundTruths = []; % Initialize an empty cell array to store ground truth labels
+        descriptors = [];
         
         for i = 1:length(files)
             % Get the file name
             fileName = files(i).name;
-
+            
             % Get the full path to the audio file
             audioPath = fullfile(path, fileName);
-
-            % remove the .wav extension and the 4 last characters (the number of the file)
-            fileName = fileName(1:end-8);
-
+            
             % Call the extract_features function for each audio file
             descriptor = extract_features_helper(audioPath);
-
+            
             % Accumulate descriptors and ground truth labels
             descriptors = [descriptors; descriptor];
-            groundTruths = [groundTruths; mapObj(fileName)];
         end
-
+        
         descriptor = descriptors;
-        groundTruth = groundTruths;
         
         % Save all descriptors and ground truth labels in one MAT file
-        save('test_data.mat', 'descriptor', 'groundTruth');
+        save('test_data.mat', 'descriptor');
     end
 
     if isfile(path)
         % Call the extract_features function for the audio file
         descriptor = extract_features_helper(path);
-
-        [~, fileName, ~] = fileparts(path);
-        groundTruth = mapObj(fileName(1:end-4));
         
         % Save the descriptor in a MAT file
-        save('test_data.mat', 'descriptor', 'groundTruth');
+        save('test_data.mat', 'descriptor');
     end
 end
 
@@ -99,5 +86,4 @@ function audioIn_mask = myVad(audioIn, fs)
         audioIn_mask = [audioIn_mask; audioIn(chunkIndices(1):chunkIndices(2))];
     end
 end
-
 
